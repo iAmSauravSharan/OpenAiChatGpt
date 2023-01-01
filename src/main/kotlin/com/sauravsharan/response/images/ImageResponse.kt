@@ -2,8 +2,8 @@ package com.sauravsharan.response.images
 
 data class ImageResponse(
 
-    val created: Long,
+    var created: Long? = null,
 
-    val data: List<ImageUrl>
+    var data: List<ImageUrl?>? = null
 
 )

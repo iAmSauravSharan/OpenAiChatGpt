@@ -7,7 +7,7 @@ import java.io.IOException
 
 class AuthenticationInterceptor(private val token: String): Interceptor {
     @Throws(IOException::class)
-    override fun intercept(chain: Interceptor.Chain): Response? {
+    override fun intercept(chain: Interceptor.Chain): Response {
         val request: Request = chain.request()
                 .newBuilder()
                 .header("Authorization", "Bearer $token")

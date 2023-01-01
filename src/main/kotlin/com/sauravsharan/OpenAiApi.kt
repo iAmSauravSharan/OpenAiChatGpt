@@ -4,9 +4,7 @@ import com.sauravsharan.request.completion.CompletionRequest
 import com.sauravsharan.request.edit.EditRequest
 import com.sauravsharan.request.embeddings.EmbeddingRequest
 import com.sauravsharan.request.fine_tune.FineTuneRequest
-import com.sauravsharan.request.images.ImageEditRequest
 import com.sauravsharan.request.images.ImageGenerationRequest
-import com.sauravsharan.request.images.ImageVariationRequest
 import com.sauravsharan.request.moderation.ModerationRequest
 import com.sauravsharan.response.OpenAiResponse
 import com.sauravsharan.response.completion.CompletionResponse
@@ -43,24 +41,28 @@ interface OpenAiApi {
     fun createEmbeddings(@Body request: EmbeddingRequest): Single<EmbeddingResponse>
 
     @POST("images/generations")
-    fun generateImages(@Body request: ImageGenerationRequest): Single<OpenAiResponse<ImageResponse>>
+    fun generateImages(@Body request: ImageGenerationRequest): Single<ImageResponse>
 
     @Multipart
     @POST("images/edits")
-    fun editImage(@Body request: ImageEditRequest): Single<OpenAiResponse<ImageResponse>>
+    fun editImage(
+        @Part image: MultipartBody.Part,
+        @Part mask: MultipartBody.Part? = null,
+        @Part("prompt") prompt: RequestBody
+    ): Single<ImageResponse>
 
     @Multipart
     @POST("images/variations")
     fun generateImageVariations(
-        @Body request: ImageVariationRequest
-    ): Single<OpenAiResponse<ImageResponse>>
+        @Part image: MultipartBody.Part
+    ): Single<ImageResponse>
 
     @GET("files")
     fun listFiles(): Single<OpenAiResponse<File>>
 
     @Multipart
     @POST("files")
-    fun uploadFile(@Part("purpose") purpose: RequestBody?, @Part file: MultipartBody.Part?): Single<File?>?
+    fun uploadFile(@Part("purpose") purpose: RequestBody?, @Part file: MultipartBody.Part?): Single<File>
 
     @DELETE("files/{file_id}")
     fun deleteFile(@Path("file_id") fileId: String?): Single<DeleteResponse>

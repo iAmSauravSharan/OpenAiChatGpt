@@ -8,7 +8,8 @@ data class ImageVariationRequest(
      * The image to use as the basis for the variation(s).
      * Must be a valid PNG file, less than 4MB, and square
      */
-    val image: String,
+    @JsonProperty("image")
+    val imagePath: String,
 
     /**
      * The number of images to generate. Must be between 1 and 10.

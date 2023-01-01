@@ -1,11 +1,14 @@
 package com.sauravsharan.request.completion
 
+import com.fasterxml.jackson.annotation.JsonProperty
+
 data class CompletionRequest (
+
     /**
      * The name of the model to use.
-     * Required if specifying a fine tuned model or if using the new v1/completions endpoint.
+     * to get list of all models, refer /model API.
      */
-    var model: String? = null,
+    var model: String,
 
     /**
      * An optional prompt to complete from
@@ -16,8 +19,9 @@ data class CompletionRequest (
      * The maximum number of tokens to generate.
      * Requests can use up to 2048 tokens shared between prompt and completion.
      * (One token is roughly 4 characters for normal English text)
+     * newest model can support upto 4096 tokens
      */
-    var maxTokens: Int? = null,
+    var maxTokens: Int? = 16,
 
     /**
      * What sampling temperature to use. Higher values means the model will take more risks.
@@ -25,7 +29,7 @@ data class CompletionRequest (
      *
      * We generally recommend using this or [CompletionRequest.topP] but not both.
      */
-    var temperature: Double? = null,
+    var temperature: Double? = 1.0,
 
     /**
      * An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of
@@ -34,6 +38,7 @@ data class CompletionRequest (
      *
      * We generally recommend using this or [CompletionRequest.temperature] but not both.
      */
+    @JsonProperty("top_p")
     var topP: Double? = null,
 
     /**
@@ -71,13 +76,13 @@ data class CompletionRequest (
     var stop: List<String>? = null,
 
     /**
-     * Number between 0 and 1 (default 0) that penalizes new tokens based on whether they appear in the text so far.
+     * Number between -2.0 and 2.0 (default 0) that penalizes new tokens based on whether they appear in the text so far.
      * Increases the model's likelihood to talk about new topics.
      */
     var presencePenalty: Double? = null,
 
     /**
-     * Number between 0 and 1 (default 0) that penalizes new tokens based on their existing frequency in the text so far.
+     * Number between -2.0 and 2.0 (default 0) that penalizes new tokens based on their existing frequency in the text so far.
      * Decreases the model's likelihood to repeat the same line verbatim.
      */
     var frequencyPenalty: Double? = null,

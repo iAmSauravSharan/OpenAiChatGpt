@@ -7,23 +7,23 @@ data class EditRequest(
      * The name of the model to use.
      * Required if using the new v1/edits endpoint.
      */
-    var model: String? = null,
+    val model: String,
 
     /**
      * The input text to use as a starting point for the edit.
      */
-    var input: String? = null,
+    val input: String,
 
     /**
      * The instruction that tells the model how to edit the prompt.
      * For example, "Fix the spelling mistakes"
      */
-    var instruction: String,
+    val instruction: String,
 
     /**
      * How many edits to generate for the input and instruction.
      */
-    var n: Int? = null,
+    var n: Int? = 1,
 
     /**
      * What sampling temperature to use. Higher values means the model will take more risks.
@@ -31,7 +31,7 @@ data class EditRequest(
      *
      * We generally recommend altering this or [EditRequest.topP] but not both.
      */
-    var temperature: Double? = null,
+    var temperature: Double? = 1.0,
 
     /**
      * An alternative to sampling with temperature, called nucleus sampling, where the model considers the results of

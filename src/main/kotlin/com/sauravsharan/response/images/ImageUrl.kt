@@ -1,5 +1,5 @@
 package com.sauravsharan.response.images
 
 data class ImageUrl(
-    val url: String
+    var url: String? = null
 )
