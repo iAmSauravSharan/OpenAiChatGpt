@@ -15,7 +15,7 @@ import kotlin.test.assertTrue
 class ChatGPTTest {
 
     private val API_TOKEN = "ENTER_YOUR_API_KEY_HERE";
-    private val api = OpenAiService(API_TOKEN, 500).build();
+    private val api = OpenAiService(API_TOKEN, 502).build();
     private val openAi = OpenAiApi(api)
 
     @Test
