@@ -14,12 +14,13 @@ import kotlin.test.assertTrue
 
 class ChatGPTTest {
 
-    private val API_TOKEN = "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";
+    private val API_TOKEN = "ENTER_YOUR_API_KEY_HERE";
     private val api = OpenAiService(API_TOKEN, 500).build();
+    private val openAi = OpenAiApi(api)
 
     @Test
     fun shouldRetrieveAllModels() {
-        val list = api.listModels();
+        val list = openAi.listModels();
         println("result -> $list")
         assertTrue { !list.isNullOrEmpty() };
     }
@@ -27,7 +28,7 @@ class ChatGPTTest {
     @Test
     fun shouldRetrieveModelByModelID() {
         val modelId = "babbage";
-        val result = api.getModel(modelId);
+        val result = openAi.getModel(modelId);
         println("result -> $result")
         assertEquals(modelId, result.id);
     }
@@ -40,7 +41,7 @@ class ChatGPTTest {
             temperature = 0.8,
             maxTokens = 100
         )
-        val result = api.createCompletion(completionRequest);
+        val result = openAi.createCompletion(completionRequest);
         println("result -> $result")
         assertTrue { !result.id.isNullOrEmpty() };
     }
@@ -52,7 +53,7 @@ class ChatGPTTest {
             instruction = "fix the spelling mistake",
             input = "What day of the wek is it?"
         )
-        val result = api.createEdit(editRequest);
+        val result = openAi.createEdit(editRequest);
         println("result -> $result")
         assertTrue { !result.choices.isNullOrEmpty() };
     }
@@ -62,7 +63,7 @@ class ChatGPTTest {
         val request = ImageGenerationRequest(
             prompt = "show me a beautiful girl"
         )
-        val result = api.generateImages(request)
+        val result = openAi.generateImages(request)
         println(result)
         assertTrue { !result.data.isNullOrEmpty() }
         val data = result.data!![0]
@@ -75,7 +76,7 @@ class ChatGPTTest {
             imagePath = "C:\\Users\\saukum\\Documents\\Saurav\\Projects\\openAi\\openAiLibrary\\src\\test\\resources\\binarycode.png",
             prompt = "make it look like this photo is digital art"
         )
-        val result = api.editImage(request)
+        val result = openAi.editImage(request)
         println("result -> $result")
         assertTrue { !result.data.isNullOrEmpty() };
     }
@@ -85,7 +86,7 @@ class ChatGPTTest {
         val request = ImageVariationRequest(
             imagePath = "C:\\Users\\saukum\\Documents\\Saurav\\Projects\\openAi\\openAiLibrary\\src\\test\\resources\\binarycode.png"
         )
-        val result = api.generateImageVariations(request)
+        val result = openAi.generateImageVariations(request)
         println("result -> $result")
         assertTrue { !result.data.isNullOrEmpty() };
     }

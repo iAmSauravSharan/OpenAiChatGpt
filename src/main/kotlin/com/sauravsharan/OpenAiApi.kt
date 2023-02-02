@@ -1,12 +1,14 @@
 package com.sauravsharan
 
+import com.sauravsharan.OpenAi
 import com.sauravsharan.request.completion.CompletionRequest
 import com.sauravsharan.request.edit.EditRequest
 import com.sauravsharan.request.embeddings.EmbeddingRequest
 import com.sauravsharan.request.fine_tune.FineTuneRequest
+import com.sauravsharan.request.images.ImageEditRequest
 import com.sauravsharan.request.images.ImageGenerationRequest
+import com.sauravsharan.request.images.ImageVariationRequest
 import com.sauravsharan.request.moderation.ModerationRequest
-import com.sauravsharan.response.OpenAiResponse
 import com.sauravsharan.response.completion.CompletionResponse
 import com.sauravsharan.response.edit.EditResponse
 import com.sauravsharan.response.embeddings.EmbeddingResponse
@@ -17,81 +19,123 @@ import com.sauravsharan.response.fine_tune.FineTuneResponse
 import com.sauravsharan.response.images.ImageResponse
 import com.sauravsharan.response.model.Model
 import com.sauravsharan.response.moderation.ModerationResponse
-import io.reactivex.Single
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
-import retrofit2.http.*
+import okhttp3.RequestBody.Companion.asRequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import retrofit2.http.Body
+import retrofit2.http.Multipart
+import retrofit2.http.POST
+
+class OpenAiApi(private val api: OpenAi) {
 
 
-interface OpenAiApi {
+    fun listModels(): List<Model>? {
+        return api.listModels().blockingGet().data
+    }
 
-    @GET("models")
-    fun listModels(): Single<OpenAiResponse<Model>>
+    fun getModel(modelId: String): Model {
+        return api.getModel(modelId).blockingGet()
+    }
 
-    @GET("models/{model_id}")
-    fun getModel(@Path("model_id") modelId: String): Single<Model>
+    fun createCompletion(request: CompletionRequest): CompletionResponse {
+        return api.createCompletion(request).blockingGet()
+    }
 
-    @POST("completions")
-    fun createCompletion(@Body request: CompletionRequest): Single<CompletionResponse>
-
-    @POST("edits")
-    fun createEdit(@Body request: EditRequest): Single<EditResponse>
-
-    @POST("embeddings")
-    fun createEmbeddings(@Body request: EmbeddingRequest): Single<EmbeddingResponse>
+    fun createEdit(request: EditRequest): EditResponse {
+        return api.createEdit(request).blockingGet()
+    }
 
     @POST("images/generations")
-    fun generateImages(@Body request: ImageGenerationRequest): Single<ImageResponse>
+    fun generateImages(@Body request: ImageGenerationRequest):
+            ImageResponse {
+        return api.generateImages(request).blockingGet()
+    }
 
     @Multipart
     @POST("images/edits")
-    fun editImage(
-        @Part image: MultipartBody.Part,
-        @Part mask: MultipartBody.Part? = null,
-        @Part("prompt") prompt: RequestBody
-    ): Single<ImageResponse>
+    fun editImage(@Body request: ImageEditRequest):
+            ImageResponse {
+        val image = java.io.File(request.imagePath)
+        val prompt = request.prompt.toRequestBody(MultipartBody.FORM)
+        val imageBody = image.asRequestBody("text".toMediaTypeOrNull())
+        val body = MultipartBody.Part.createFormData("image", image.name, imageBody)
+
+        return api.editImage(
+            image = body,
+            prompt = prompt
+        ).blockingGet()
+    }
 
     @Multipart
     @POST("images/variations")
     fun generateImageVariations(
-        @Part image: MultipartBody.Part
-    ): Single<ImageResponse>
+        @Body request: ImageVariationRequest
+    ): ImageResponse {
+        val image = java.io.File(request.imagePath)
+        val imageBody: RequestBody = image.asRequestBody("image/*".toMediaType())
+        val body = MultipartBody.Part.createFormData("image", image.name, imageBody)
 
-    @GET("files")
-    fun listFiles(): Single<OpenAiResponse<File>>
+        return api.generateImageVariations(
+            image = body
+        ).blockingGet()
+    }
 
-    @Multipart
-    @POST("files")
-    fun uploadFile(@Part("purpose") purpose: RequestBody?, @Part file: MultipartBody.Part?): Single<File>
+    fun createEmbeddings(request: EmbeddingRequest): EmbeddingResponse {
+        return api.createEmbeddings(request).blockingGet()
+    }
 
-    @DELETE("files/{file_id}")
-    fun deleteFile(@Path("file_id") fileId: String?): Single<DeleteResponse>
+    fun listFiles(): List<File>? {
+        return api.listFiles().blockingGet().data
+    }
 
-    @GET("files/{file_id}")
-    fun retrieveFile(@Path("file_id") fileId: String?): Single<File>
+    fun uploadFile(purpose: String, filepath: String): File? {
+        val file = java.io.File(filepath)
+        val purposeBody = purpose.toRequestBody(MultipartBody.FORM)
+        val fileBody = file.asRequestBody("text".toMediaTypeOrNull())
+        val body = MultipartBody.Part.createFormData("file", filepath, fileBody)
+        return api.uploadFile(purposeBody, body).blockingGet()
+    }
 
-    @POST("fine-tunes")
-    fun createFineTune(@Body request: FineTuneRequest): Single<FineTuneResponse>
+    fun deleteFile(fileId: String): DeleteResponse {
+        return api.deleteFile(fileId).blockingGet()
+    }
 
-    @POST("completions")
-    fun createFineTuneCompletion(@Body request: CompletionRequest?): Single<CompletionResponse>
+    fun retrieveFile(fileId: String): File {
+        return api.retrieveFile(fileId).blockingGet()
+    }
 
-    @GET("fine-tunes")
-    fun listFineTunes(): Single<OpenAiResponse<FineTuneResponse>>
+    fun createFineTune(request: FineTuneRequest): FineTuneResponse {
+        return api.createFineTune(request).blockingGet()
+    }
 
-    @GET("fine-tunes/{fine_tune_id}")
-    fun retrieveFineTune(@Path("fine_tune_id") fineTuneId: String?): Single<FineTuneResponse>
+    fun createFineTuneCompletion(request: CompletionRequest): CompletionResponse {
+        return api.createFineTuneCompletion(request).blockingGet()
+    }
 
-    @POST("fine-tunes/{fine_tune_id}/cancel")
-    fun cancelFineTune(@Path("fine_tune_id") fineTuneId: String?): Single<FineTuneResponse>
+    fun listFineTunes(): List<FineTuneResponse>? {
+        return api.listFineTunes().blockingGet().data
+    }
 
-    @GET("fine-tunes/{fine_tune_id}/events")
-    fun listFineTuneEvents(@Path("fine_tune_id") fineTuneId: String?): Single<OpenAiResponse<FineTuneEvent>>
+    fun retrieveFineTune(fineTuneId: String): FineTuneResponse {
+        return api.retrieveFineTune(fineTuneId).blockingGet()
+    }
 
-    @DELETE("models/{fine_tune_id}")
-    fun deleteFineTune(@Path("fine_tune_id") fineTuneId: String?): Single<DeleteResponse>
+    fun cancelFineTune(fineTuneId: String): FineTuneResponse {
+        return api.cancelFineTune(fineTuneId).blockingGet()
+    }
 
-    @POST("moderations")
-    fun createModeration(@Body request: ModerationRequest): Single<ModerationResponse>
+    fun listFineTuneEvents(fineTuneId: String): List<FineTuneEvent>? {
+        return api.listFineTuneEvents(fineTuneId).blockingGet().data
+    }
 
+    fun deleteFineTune(fineTuneId: String): DeleteResponse {
+        return api.deleteFineTune(fineTuneId).blockingGet()
+    }
+
+    fun createModeration(request: ModerationRequest): ModerationResponse {
+        return api.createModeration(request).blockingGet()
+    }
 }
